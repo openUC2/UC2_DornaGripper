@@ -3,54 +3,108 @@
 <a href="#logo" name="logo"><img src="https://raw.githubusercontent.com/bionanoimaging/UC2-GIT/master/IMAGES/UC2_logo_text.png" width="400"></a>
 </p>
 
-# openUC2 *PROJECT_NAME*
+# openUC2 *UC2 Dorna.ai Gripper*
 ---
 
-This repository will help you to build and setup *A NICE TOOL*.
+This repository will help you to build and setup the linear gripper that can carry wellplates, syringes and other neat things to make your microscope more .. well .. robotic 🤖🤖🤖.
 
-*DESCRIBE WHAT IT DOES AND WHAT IT IS FOR.*
+
+The tool can be mounted on (any robot, but moutns perfectly on the) Dorna.ai 2 robot arm. It's terribly overengineered and makes use of two linear stepper motors that move the two finger independently. Anyway. This way, we can translate "stuff" linearly AND gripe it with micrometer precision - which we think is useful to e.g. deliver samples to pipetting robots or OpenUC2 light-sheet systems.
 
 Curious to see what this looks like? Keep scrolling!
 
-*INCLUDE A NICE PICTURE AND/OR SCHEME.*
 
 <p align="center">
-<a href="#logo" name="logo"><img src="./IMAGES/"></a>
+<a href="#logo" name="logo"><img src="./IMAGES/IMG_20230106_143617.jpg"></a>
 </p>
 
-The overall price is in the range *OF LESS THAT A ZILLION*.
+The overall price is in the range of ~200 €.
 
 
 ***Features:***
-* IT MOVES?!
-* IT TAKES IMAGES?!
-* IT DOES YOUR LAUNDRY?!
+* 2 non-captive linear stepper motors
+* linear rail to add stability (MGN12H)
+* Changable fingers/tools
 
-
-# Table of Content
-* **[Software](#-software)**
-* **[Hardware](#-hardware)**
-* **[Bill of materials](#-bill-of-materials)**
-* **[Electronics](#-electronics)**
-* **[Results](#-results)**
 
 
 ## In-Action
-*SHARE YOUR FANCY GIF HERE. IT MOVES!*
+
+An example of grabbing a magnetic light-sheet sample mount and linearly move it in one direction.
 
 <p align="center">
-<a href="#logo" name="logo"><img src="./IMAGES/" width="600"></a>
+<a href="#logo" name="logo"><img src="./IMAGES/VID_20230110_170650.gif" width="600"></a>
 </p>
 
 
 # Software
-*HOW DO I CONTROL THIS THING?*
 
-## Custom Python code *IF APPLICABLE*
-We also provide a code example for driving the device using a python driver. Please refer to the code and the package in the folder [PYTHON](./PYTHON).
+We control it with the UC2-ESP32 firmware running on the ESP32. Additional information can be found here: https://github.com/youseetoo/uc2-esp32/ and http://openuc2.github.io/.
 
-## *CUSTOM FANCY SOFTWARE*
-We also provide *SOME SORCERY* for driving the device. Find the files in folder [*MY_AWESOME_SOFTWARE*]().
+
+## Custom Python code
+
+The below code runs the motion visible in the video above:
+
+```py
+#%%
+#
+import uc2rest
+import numpy as np
+import time
+
+port = "unknown"
+port = "/dev/cu.SLAB_USBtoUART"
+port = "/dev/cu.wchusbserial14310"
+#port = "/dev/cu.wchusbserial1440"
+port = "/dev/cu.wchusbserial110"
+
+ESP32 = uc2rest.UC2Client(serialport=port)
+# setting debug output of the ser'ial to true - all message will be printed
+ESP32.serial.DEBUG=True
+
+#%%
+time.sleep(0)
+#fully open
+speed = 15000
+
+ESP32.motor.move_xyzt(steps=(0,20000,-20000,0), speed=speed, is_blocking=True)
+#time.sleep(.5)
+
+# move to center
+ESP32.motor.move_xyzt(steps=(0,-10000,10000,0), speed=speed, is_blocking=True)
+#time.sleep(.5)
+
+# open
+ESP32.motor.move_xyzt(steps=(0,5000,-5000,0), speed=speed, is_blocking=True)
+#time.sleep(.5)
+
+# close
+ESP32.motor.move_xyzt(steps=(0,-5000,5000,0), speed=speed, is_blocking=True)
+#time.sleep(.5)
+
+# both move left
+ESP32.motor.move_xyzt(steps=(0,-5000,-5000,0), speed=speed, is_blocking=True)
+#time.sleep(.5)
+
+# both move right
+ESP32.motor.move_xyzt(steps=(0,5000,5000,0), speed=speed, is_blocking=True)
+#time.sleep(.5)
+
+
+
+# %
+speed =1000
+# both move left
+ESP32.motor.move_xyzt(steps=(0,-5000,-5000,0), speed=speed, is_blocking=True)
+#time.sleep(.5)
+
+# both move right
+ESP32.motor.move_xyzt(steps=(0,5000,5000,0), speed=speed, is_blocking=True)
+#time.sleep(.5)
+# %%
+```
+
 
 # Hardware
 
@@ -63,64 +117,51 @@ Below you will find all components necessary to build this device
 
 ### 3D printing files
 
-All these files need to be printed. We used a Prusa i3 MK3 using PLA Prusament (Galaxy Black) at layer height x.x mm and infill xx%.
+All these files need to be printed. We used a Prusa i3 MK3 using PETG Prusament (Orange) at layer height 0.3 mm and infill 100%.
 
 
-|  Type | Details  |  Price | Link  |
-|---|---|---|---|
-| *FANCY* Holder |  *IT HOLD OTHER FANCY PARTS* |  x,xx € | [Part.stl](./STL/)  |
-
-
+All files can be found in the folder [./STL](./STL)
 ### Additional parts
 This is used in the current version of the setup
 
 |  Type | Details  |  Price | Link  |
 |---|---|---|---|
-| *FANCY* Part | *IT DOES SOME MAGIC* |  xx € | [My favourite online shop]()  |
+| Joy It captive stepper motor | NEMA8 |  60 € | [Pollin](https://www.pollin.de/p/joy-it-schrittmotor-nema08-04la-b20shd4353-c38l-0-5kg-5-28v-0-24a-20x22x27-5-310849?utm_source=google&utm_medium=fshopping&gclid=Cj0KCQiAtvSdBhD0ARIsAPf8oNldR6nm0HW7yZfGmP3uehqCQv8dbL60tWlKPCMHk-KJEC2soM3b4dcaApBTEALw_wcB)  |
+| 2x MGN12H Block | Linear |  12 € | [Roboterbausatz](https://www.roboter-bausatz.de/p/mgn12h-linearlager)  |
+| 20cm MGN12H Rail | Linear |  12 € | [Roboterbausatz](https://www.roboter-bausatz.de/p/linearfuehrung-mgn12h-100mm)  |
+
 
 ### Design files
-The original design files are in the [INVENTOR](./INVENTOR) folder. *FOR ANOTHER FORMAT, GET YOUR OWN FOLDER.*
 
+The original design files are in the [INVENTOR](./INVENTOR) folder.
 
 ### Electronics
-*THE FANCY ELECTRONICS TO RUN THE MOTOR! ...OR WHATEVER YOU USE THERE.*
+
+Please have a look here: https://youseetoo.github.io/
 
 
 ### Assembly of the DEVICE
 
-***1.*** *These are the parts needed for the DEVICE*
+ For assembling the device you only need some M3 screws and nuts to hold the parts together as shown in the photo below. The steppers need to be hooked up to the stepper controller.
 
-<p align="center">
-<a> <img src="./IMAGES/" width="300"></a>
-</p>
+ Controlling it through the Dorna-LAB works as follows:
 
-***2.*** *Start by ...*
+ Use the UC2-ESP Software to control the motors. Either use the UC2-REST Python interface https://github.com/openUC2/UC2-REST/ which can be used in the same jupyter notebook or alter the code to have the following setup:
 
-<p align="center">
-<a> <img src="./IMAGES/" width="300"></a>
-</p>
-
-***2.*** *Continue with ...*
-
-<p align="center">
-<a> <img src="./IMAGES/" width="300"></a>
-</p>
-
-***2.*** *DONE! LOOK AT THE BEAUTY!*
-
-<p align="center">
-<a> <img src="./IMAGES/" width="300"></a>
-</p>
-
+ **dorna controlbox** -> **PWM** -> **UC2-ESP** -> translate Analog into Stepper position.
 
 ## Showcase
-*AWESOME RESULTS!*
+
+Rendering of the gripper on the Dorna.ai
 
 <p align="center">
-<a> <img src="./IMAGES/" width="300"></a>
+<a> <img src="./IMAGES/DornaAI_gripper_v1.png" width="300"></a>
 </p>
 
-***Fig 1.*** *MY MOST AWSOME IMAGE*
+<p align="center">
+<a> <img src="./IMAGES/IMG_20230106_143521.jpg" width="300"></a>
+</p>
+
 
 
 ## Get Involved
